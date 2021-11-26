@@ -5,29 +5,31 @@ import ReceipeTable from "./components/ReceipeTable";
 
 function App() {
   const [receipes, setReceipes] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const [originalData, setOriginalData] = useState([]);
 
   const fetchReceipes = async () => {
-    setLoading(true);
     try {
       const { data } = await axios(
         "https://s3-ap-southeast-1.amazonaws.com/he-public-data/reciped9d7b8c.json"
       );
-
       setReceipes(data);
       setOriginalData(data);
-      setLoading(false);
     } catch (error) {
       setReceipes([]);
       console.log(error);
-      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchReceipes();
+    const receipesInLocalStorage = window.localStorage.getItem("receipes");
+
+    if (receipesInLocalStorage) {
+      console.log(receipesInLocalStorage);
+      setReceipes(JSON.parse(receipesInLocalStorage));
+    } else {
+      fetchReceipes();
+    }
   }, []);
 
   const EditableCell = ({
@@ -104,25 +106,31 @@ function App() {
     );
   };
 
-  const resetData = () => setReceipes(originalData);
+  const resetData = () => {
+    setReceipes(originalData);
+    window.localStorage.removeItem("receipes");
+  };
 
   return (
     <div className="App">
-      {loading ? (
-        <h2>loading...</h2>
-      ) : (
-        <>
-          <div className="table">
-            <ReceipeTable
-              columns={columns}
-              data={receipes}
-              sortBy={sortBy}
-              updateReceipesData={updateReceipesData}
-            />
-          </div>
-          <button onClick={resetData}>Reset Data</button>
-        </>
-      )}
+      <>
+        <div className="table">
+          <ReceipeTable
+            columns={columns}
+            data={receipes}
+            sortBy={sortBy}
+            updateReceipesData={updateReceipesData}
+          />
+        </div>
+        <button
+          onClick={() => {
+            window.localStorage.setItem("receipes", JSON.stringify(receipes));
+          }}
+        >
+          save
+        </button>
+        <button onClick={resetData}>Reset Data</button>
+      </>
     </div>
   );
 }

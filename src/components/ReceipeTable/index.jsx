@@ -72,7 +72,6 @@ const ReceipeTable = ({ columns, data, sortBy, updateReceipesData }) => {
                   return (
                     <td {...cell.getCellProps()}>
                       {cell.isGrouped ? (
-                        // If it's a grouped cell, add an expander and row count
                         <>
                           <span {...row.getToggleRowExpandedProps()}>
                             {row.isExpanded ? "-" : "+"}
@@ -80,11 +79,8 @@ const ReceipeTable = ({ columns, data, sortBy, updateReceipesData }) => {
                           {cell.render("Cell")} ({row.subRows.length})
                         </>
                       ) : cell.isAggregated ? (
-                        // If the cell is aggregated, use the Aggregated
-                        // renderer for cell
                         cell.render("Aggregated")
-                      ) : cell.isPlaceholder ? null : ( // For cells with repeated values, render null
-                        // Otherwise, just render the regular cell
+                      ) : cell.isPlaceholder ? null : (
                         cell.render("Cell")
                       )}
                     </td>
