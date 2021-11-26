@@ -17,3 +17,8 @@ td,
 table {
   border: 1px solid black;
 }
+
+th,
+td {
+  max-width: 25rem;
+}

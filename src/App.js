@@ -7,6 +7,8 @@ function App() {
   const [receipes, setReceipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [originalData, setOriginalData] = useState([]);
+
   const fetchReceipes = async () => {
     setLoading(true);
     try {
@@ -15,6 +17,7 @@ function App() {
       );
 
       setReceipes(data);
+      setOriginalData(data);
       setLoading(false);
     } catch (error) {
       setReceipes([]);
@@ -26,6 +29,29 @@ function App() {
   useEffect(() => {
     fetchReceipes();
   }, []);
+
+  const EditableCell = ({
+    value: initialValue,
+    row: { index },
+    column: { id },
+    updateReceipesData,
+  }) => {
+    const [value, setValue] = useState(initialValue);
+
+    const onChange = (e) => {
+      setValue(e.target.value);
+    };
+
+    const onBlur = () => {
+      updateReceipesData(index, id, value);
+    };
+
+    useEffect(() => {
+      setValue(initialValue);
+    }, [initialValue]);
+
+    return <input value={value} onChange={onChange} onBlur={onBlur} />;
+  };
 
   const columns = useMemo(
     () => [
@@ -51,6 +77,7 @@ function App() {
         accessor: "price",
         aggregate: "average",
         Aggregated: ({ value }) => `${Math.round(value * 100) / 100} (avg)`,
+        Cell: EditableCell,
       },
       {
         Header: "Description",
@@ -63,12 +90,38 @@ function App() {
 
   const sortBy = [{ id: "price" }, { id: "name" }];
 
+  const updateReceipesData = (rowIndex, columnId, value) => {
+    setReceipes((old) =>
+      old.map((row, index) => {
+        if (index === rowIndex) {
+          return {
+            ...old[rowIndex],
+            [columnId]: value,
+          };
+        }
+        return row;
+      })
+    );
+  };
+
+  const resetData = () => setReceipes(originalData);
+
   return (
     <div className="App">
       {loading ? (
         <h2>loading...</h2>
       ) : (
-        <ReceipeTable columns={columns} data={receipes} sortBy={sortBy} />
+        <>
+          <div className="table">
+            <ReceipeTable
+              columns={columns}
+              data={receipes}
+              sortBy={sortBy}
+              updateReceipesData={updateReceipesData}
+            />
+          </div>
+          <button onClick={resetData}>Reset Data</button>
+        </>
       )}
     </div>
   );

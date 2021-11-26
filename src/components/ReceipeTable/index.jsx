@@ -1,7 +1,7 @@
 import React from "react";
 import { useExpanded, useSortBy, useTable, useGroupBy } from "react-table";
 
-const ReceipeTable = ({ columns, data, sortBy }) => {
+const ReceipeTable = ({ columns, data, sortBy, updateReceipesData }) => {
   const {
     getTableProps,
     headerGroups,
@@ -14,6 +14,7 @@ const ReceipeTable = ({ columns, data, sortBy }) => {
       columns,
       data,
       initialState: { sortBy },
+      updateReceipesData,
     },
     useGroupBy,
     useSortBy,
