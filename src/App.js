@@ -30,6 +30,10 @@ function App() {
   const columns = useMemo(
     () => [
       {
+        Header: "Category",
+        accessor: "category",
+      },
+      {
         Header: "ID",
         accessor: "id",
       },
@@ -37,10 +41,7 @@ function App() {
         Header: "Name",
         accessor: "name",
       },
-      {
-        Header: "Category",
-        accessor: "category",
-      },
+
       {
         Header: "Label",
         accessor: "label",
