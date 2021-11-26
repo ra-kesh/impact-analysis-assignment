@@ -49,6 +49,8 @@ function App() {
       {
         Header: "Price",
         accessor: "price",
+        aggregate: "average",
+        Aggregated: ({ value }) => `${Math.round(value * 100) / 100} (avg)`,
       },
       {
         Header: "Description",
@@ -59,12 +61,14 @@ function App() {
     []
   );
 
+  const sortBy = [{ id: "price" }, { id: "name" }];
+
   return (
     <div className="App">
       {loading ? (
         <h2>loading...</h2>
       ) : (
-        <ReceipeTable columns={columns} data={receipes} />
+        <ReceipeTable columns={columns} data={receipes} sortBy={sortBy} />
       )}
     </div>
   );

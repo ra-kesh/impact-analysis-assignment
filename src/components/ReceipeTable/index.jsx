@@ -1,15 +1,24 @@
 import React from "react";
-import { useSortBy, useTable } from "react-table";
+import { useExpanded, useSortBy, useTable, useGroupBy } from "react-table";
 
-const ReceipeTable = ({ columns, data }) => {
-  const { getTableProps, headerGroups, getTableBodyProps, rows, prepareRow } =
-    useTable(
-      {
-        columns,
-        data,
-      },
-      useSortBy
-    );
+const ReceipeTable = ({ columns, data, sortBy }) => {
+  const {
+    getTableProps,
+    headerGroups,
+    getTableBodyProps,
+    rows,
+    prepareRow,
+    setSortBy,
+  } = useTable(
+    {
+      columns,
+      data,
+      initialState: { sortBy },
+    },
+    useGroupBy,
+    useSortBy,
+    useExpanded
+  );
 
   return (
     <>
@@ -18,8 +27,29 @@ const ReceipeTable = ({ columns, data }) => {
           {headerGroups.map((headerGroup) => (
             <tr {...headerGroup.getHeaderGroupProps()}>
               {headerGroup.headers.map((column) => (
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                <th
+                  {...column.getHeaderProps()}
+                  onClick={() => {
+                    //set sort desc, aesc or none?
+                    const desc =
+                      column.isSortedDesc === true
+                        ? undefined
+                        : column.isSortedDesc === false
+                        ? true
+                        : false;
+                    if (column.id === "price" || column.id === "name") {
+                      setSortBy([{ id: column.id, desc }, ...sortBy]);
+                    }
+                  }}
+                >
+                  {column.canGroupBy && column.id === "category" ? (
+                    <span {...column.getGroupByToggleProps()}>
+                      {column.isGrouped ? "+" : "-"}
+                    </span>
+                  ) : null}
+
                   {column.render("Header")}
+
                   <span>
                     {column.isSorted
                       ? column.isSortedDesc
@@ -32,34 +62,36 @@ const ReceipeTable = ({ columns, data }) => {
             </tr>
           ))}
         </thead>
-        {/* Apply the table body props */}
         <tbody {...getTableBodyProps()}>
-          {
-            // Loop over the table rows
-            rows.map((row) => {
-              // Prepare the row for display
-              prepareRow(row);
-              return (
-                // Apply the row props
-                <tr {...row.getRowProps()}>
-                  {
-                    // Loop over the rows cells
-                    row.cells.map((cell) => {
-                      // Apply the cell props
-                      return (
-                        <td {...cell.getCellProps()}>
-                          {
-                            // Render the cell contents
-                            cell.render("Cell")
-                          }
-                        </td>
-                      );
-                    })
-                  }
-                </tr>
-              );
-            })
-          }
+          {rows.map((row) => {
+            prepareRow(row);
+            return (
+              <tr {...row.getRowProps()}>
+                {row.cells.map((cell) => {
+                  return (
+                    <td {...cell.getCellProps()}>
+                      {cell.isGrouped ? (
+                        // If it's a grouped cell, add an expander and row count
+                        <>
+                          <span {...row.getToggleRowExpandedProps()}>
+                            {row.isExpanded ? "-" : "+"}
+                          </span>{" "}
+                          {cell.render("Cell")} ({row.subRows.length})
+                        </>
+                      ) : cell.isAggregated ? (
+                        // If the cell is aggregated, use the Aggregated
+                        // renderer for cell
+                        cell.render("Aggregated")
+                      ) : cell.isPlaceholder ? null : ( // For cells with repeated values, render null
+                        // Otherwise, just render the regular cell
+                        cell.render("Cell")
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </>
